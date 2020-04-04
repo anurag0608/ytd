@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Home</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="/css/uikit.min.css" />
+        <link rel='stylesheet' href="/css/main.css">
+        <link href="https://fonts.googleapis.com/css2?family=Lobster&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Monoton&display=swap" rel="stylesheet">
+        <script src="/js/uikit.min.js"></script>
+        <script src="/js/uikit-icons.min.js"></script>
+        <script
+        src="https://code.jquery.com/jquery-3.4.1.min.js"
+        integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+        crossorigin="anonymous"></script>
+        <script src="/js/main.js"></script>
+    </head>
+    <body>
+
+    <nav class="uk-navbar-container uk-margin" uk-navbar>
+            <div class="uk-navbar-center">
+        
+                <div class="uk-navbar-center-left"><div>
+                </div></div>
+                <a class="uk-navbar-item uk-logo" style="font-family: 'Monoton', cursive;font-size: 45px;"; href="#">YTD.COM</a>
+                </div></div>
+        
+            </div>
+    </nav>
+
+<div class="uk-container">
+          
+    <input id='link'class="uk-input" name="url" placeholder="Paste the URL here..." required>
+           <button id='convert'class="uk-button uk-button-primary">Convert</button>
+           <div id='video-info'class="uk-grid uk-flex-center">
+              
+                  <div class="uk-card uk-card-small uk-card-default">
+                        <div class="uk-card-header">
+                            <div id='bigImage'class="uk-background-primary uk-box-shadow-bottom uk-box-shadow-small uk-flex-center" >
+                               <div></div>
+                               <div>
+                                   <div  class="uk-overflow-hidden" >
+                                        <img id='thumbnail'class="uk-blend-multiply uk-border" sizes="(min-width: 350px) 650px, 100vw" width="650" height="433" src="" alt="Blend Multiply" uk-img>
+                                   </div>
+                                   <div class="uk-position-center">
+                                       <p id='author'style='color:white'class="uk-h3 uk-margin-remove"></p>
+                                   </div>
+                               
+                               </div>
+                               <div></div>
+                              
+                            </div>
+                            <div style='margin-top: 45px;'class="uk-width-expand">
+                                <h5 id='title'class="uk-card-title uk-margin-remove-bottom"></h5>
+                            </div>
+                        <div class="uk-card-body">
+                            <p id='download-options'>
+                                <div>
+                                    <table class="uk-table uk-table-middle uk-table-divider">
+                                        <thead>
+                                            <tr>
+                                                <th class="uk-width-small">Quality</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                           
+                                        </tbody>
+                                    </table>
+                                </div>    
+                            </p>
+                        </div>
+                        <div class="uk-card-footer">
+                            <a href="#" id='readmore'class="uk-button uk-button-text">Go to Artist!</a>
+                        </div>
+                        </div>
+                  </div>
+             
+            </div> 
+</div>
+
+    </body>
+</html>

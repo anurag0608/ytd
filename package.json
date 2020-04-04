@@ -1,0 +1,22 @@
+{
+  "name": "ytb-downloader",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "AxDu",
+  "license": "ISC",
+  "dependencies": {
+    "@ffmpeg-installer/ffmpeg": "^1.0.20",
+    "body-parser": "^1.19.0",
+    "compression": "^1.7.4",
+    "ejs": "^3.0.2",
+    "express": "^4.17.1",
+    "fluent-ffmpeg": "^2.1.2",
+    "path": "^0.12.7",
+    "randomstring": "^1.1.5",
+    "ytdl-core": "^2.0.1"
+  }
+}

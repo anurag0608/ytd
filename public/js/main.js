@@ -1,0 +1,70 @@
+$(document).ready(()=>{
+    const $ = jQuery.noConflict();
+    const inputUrl = $('#link')
+    const videoInfo = $('#video-info')
+    videoInfo.css('display','none')
+    let isActive = false
+    $('#convert').on('click',(e)=>{
+        const url = $(inputUrl).val().trim()
+        if(url!=''){
+            if(isActive){
+                $('#title').removeClass('text-focus-in')
+                $('#bigImage').css('filter','blur(4px)')
+                $('#bigImage').removeClass('rotate-in-2-cw')
+                $('#bigImage').addClass('swirl-out-bck')
+                $('#title').css('filter','blur(3px)')
+                $('#thumbnail').removeClass('kenburns-top')
+            }
+            console.log(url)
+            
+           
+            $.post('/videoinfo',{url:url},(response)=>{
+                let blur = 4;
+                const resObj = JSON.parse(response);
+                console.log(resObj)
+                $('tbody').html(""); 
+               
+            resObj.availQuality.forEach(q=>{
+                let component = `<tr>
+                <td>${q}</td>
+                    <td><a href='/download?quality=${q}&from=${url}&title=${resObj.title}'class="uk-button uk-button-default download_video" resolutions='${q}' type="button">Download</a></td>
+                </tr>`
+                $('tbody').append(component); 
+            })
+                $('#thumbnail').attr('src',resObj.thumbnail)
+                $('#title').text(resObj.title)
+                $('#author').text(resObj.author)
+                $('#readmore').attr('href',resObj.channel_url)
+                videoInfo.css('display','block')
+                $('#thumbnail').on('load',(e)=>{
+                    $('#bigImage').css('filter','blur(0px)')
+                    $('#bigImage').removeClass('swirl-out-bck')
+                    $('#title').css('filter','blur(0)')
+                    $('#title').addClass('text-focus-in')
+                    $('#thumbnail').addClass('kenburns-top')
+                    $('#bigImage').addClass('rotate-in-2-cw')
+                    isActive = true
+                })
+            })
+        }else{
+            console.log("URL is empty!!")
+        }
+    })
+    // $('table').on('click','.download_video',(e)=>{
+    //     const resolutions = e.target.attributes.resolutions.value.toString();
+    //     const from = $(inputUrl).val().trim()
+    //     const url = `/download?quality=${resolutions}&from=${from}`;
+    //     $.get(url,(response)=>{
+    //         console.log(`download request sent to ${url}`)
+    //     });
+    //     // $('.download_video').each(event=>{
+    //     //     console.log(event.target)
+    //     //     if(event.target === target){
+    //     //         console.log(target)
+    //     //     }
+    //     // })
+    //     // $( "li.item-a" ).parent().css( "background-color", "red" );    
+    // })
+
+    
+})
