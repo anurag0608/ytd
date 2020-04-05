@@ -7,6 +7,7 @@
         <link rel='stylesheet' href="/css/redirect.css">
         <link href="https://fonts.googleapis.com/css2?family=Lobster&display=swap" rel="stylesheet">
         <link href="https://fonts.googleapis.com/css2?family=Monoton&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&display=swap" rel="stylesheet">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.1/socket.io.js"></script>
         <script src="/js/uikit.min.js"></script>
         <script src="/js/uikit-icons.min.js"></script>
@@ -15,6 +16,7 @@
         integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
         crossorigin="anonymous"></script>
         <script src="/js/redirect.js"></script>
+        <script src="/js/facts.js"></script>
     </head>
     <body>
 
@@ -33,7 +35,9 @@
     </div>
     <button id='autofire' quality=<%=quality%> url=<%=url%> title=<%=title%> style='display:none'><%=title%></button>
 <div class="uk-container">
-          <h1>REDIRECT</h1>
+          <div style="text-align: center;">
+            <h2 id='random_facts'>Please wait while the file being converted....</h2>
+        </div>
 </div>
     </body>
 </html>
