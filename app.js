@@ -8,22 +8,9 @@ const express    = require('express'),
       ffmpegPath = require('@ffmpeg-installer/ffmpeg').path,
       ffmpeg     = require('fluent-ffmpeg'),
       ffmpeg.setFfmpegPath(ffmpegPath),
-      compression = require('compression'),
       randomstring = require('randomstring'),
-      shouldCompress = (req, res) => {
-          if (req.headers['x-no-compression']) {
-            // don't compress responses if this request header is present
-            return false;
-          }
-          // fallback to standard compression
-          return compression.filter(req, res);
-        };
         app.set('trust proxy', 1);
         app.set('view engine','ejs');
-        app.use(compression({
-            filter:shouldCompress,
-            threshold: 3
-        }));
         app.use(express.static('public'));
         app.use(bodyParser.urlencoded({extended: true}));
         app.disable('x-powered-by');
