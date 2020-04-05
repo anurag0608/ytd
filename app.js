@@ -3,10 +3,11 @@ const express    = require('express'),
       bodyParser = require('body-parser'),
       fs         = require('fs'),
       readline   = require('readline'),
-      path       = require('path')
+      path       = require('path'),
+      dotenv     = require('dotenv'),
       ytdl       = require('ytdl-core'),
       ffmpegPath = require('@ffmpeg-installer/ffmpeg').path,
-      ffmpeg     = require('fluent-ffmpeg'),
+      ffmpeg     = require('fluent-ffmpeg');
       ffmpeg.setFfmpegPath(ffmpegPath),
       randomstring = require('randomstring'),
         app.set('trust proxy', 1);
@@ -14,7 +15,7 @@ const express    = require('express'),
         app.use(express.static('public'));
         app.use(bodyParser.urlencoded({extended: true}));
         app.disable('x-powered-by');
-
+dotenv.config();
 //REST APIs
 app.get('/',(req, res)=>{
   res.render('index');
@@ -101,4 +102,4 @@ app.get('/download',(req, res)=>{
             })
         
 })
-app.listen(3000,()=> console.log("Server is started!"));
+app.listen(process.env.PORT,()=> console.log("Server is started!"));
