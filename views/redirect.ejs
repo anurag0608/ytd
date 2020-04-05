@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Home</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="/css/uikit.min.css" />
+        <link rel='stylesheet' href="/css/redirect.css">
+        <link href="https://fonts.googleapis.com/css2?family=Lobster&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Monoton&display=swap" rel="stylesheet">
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.1/socket.io.js"></script>
+        <script src="/js/uikit.min.js"></script>
+        <script src="/js/uikit-icons.min.js"></script>
+        <script
+        src="https://code.jquery.com/jquery-3.4.1.min.js"
+        integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+        crossorigin="anonymous"></script>
+        <script src="/js/redirect.js"></script>
+    </head>
+    <body>
+
+    <nav class="uk-navbar-container uk-margin" uk-navbar>
+            <div class="uk-navbar-center">
+        
+                <div class="uk-navbar-center-left"><div>
+                </div></div>
+                <a class="uk-navbar-item uk-logo" style="font-family: 'Monoton', cursive;font-size: 45px;"; href="#">YTD.COM</a>
+                </div></div>
+        
+            </div>
+    </nav>
+    <div class="uk-container uk-align-center">
+        <progress id="js-progressbar" class="uk-progress" value="" max="100"></progress>
+    </div>
+    <button id='autofire' quality=<%=quality%> url=<%=url%> title=<%=title%> style='display:none'><%=title%></button>
+<div class="uk-container">
+          <h1>REDIRECT</h1>
+</div>
+    </body>
+</html>

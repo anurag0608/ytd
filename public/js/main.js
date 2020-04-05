@@ -27,7 +27,7 @@ $(document).ready(()=>{
             resObj.availQuality.forEach(q=>{
                 let component = `<tr>
                 <td>${q}</td>
-                    <td><a href='/download?quality=${q}&from=${url}&title=${resObj.title}'class="uk-button uk-button-default download_video" resolutions='${q}' type="button">Download</a></td>
+                    <td><a href='/redirect?quality=${q}&from=${url}&title=${resObj.title.toString()}' class="uk-button uk-button-default download_video" resolutions='${q}' type="button">Download</a></td>
                 </tr>`
                 $('tbody').append(component); 
             })
