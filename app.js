@@ -63,8 +63,8 @@ app.get('/download',(req, res)=>{
   const itags = new Map([['1080p','137'],['720p','136'],['480p','135'],['360p','18']]);
 // merge audio and video for 1080p
     console.log("Downloading audio..")
-    const audioOutput = path.resolve(__dirname,`/${randomstring.generate(5)}.mp4`),
-    mainOutput = path.resolve(__dirname,`/${randomstring.generate(5)}.mp4`);
+    const audioOutput = path.resolve(`./${randomstring.generate(5)}.mp4`),
+    mainOutput = path.resolve(`./${randomstring.generate(5)}.mp4`);
 
     const onProgress = (chunkLength, downloaded, total) => {
       const percent = downloaded / total;
@@ -100,6 +100,7 @@ app.get('/download',(req, res)=>{
                     if(err) console.log(err);
                     else
                     console.log('\nFinished merging video and audio')
+                    //console.log(mainOutput)
                     fs.createReadStream(mainOutput).on('end',()=>{
                         fs.unlink(mainOutput,err=>{
                           if(err) console.log(err)
