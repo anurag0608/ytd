@@ -57,11 +57,14 @@ app.get('/downloadit',(req, res)=>{
   const token = req.query.token;
   const mainOutput = req.query.output;
   const filename = req.query.filename;
+  fs.rename(mainOutput,`./${filename}.mp4`,()=>{
+    console.log("File renamed...")
+  })
   jwt.verify(token, process.env.JWT_SECRET, (err, decoded)=>{
     if(err){
        console.log('Link Expired!! Cannot create account from this token :-(');
        res.send('LINK EXPIRED!!');
-       fs.unlink(mainOutput,err=>{
+       fs.unlink(`./${filename}`,err=>{
         if(err) console.log(err)
         else{
           console.log("Output file removed")
@@ -71,11 +74,11 @@ app.get('/downloadit',(req, res)=>{
       //console.log(decoded);
 
       res.attachment(`${filename}.mp4`)
-      fs.createReadStream(mainOutput).on('error',err=>{
+      fs.createReadStream(`./${filename}.mp4`).on('error',err=>{
         console.log('no such file!');
         res.redirect('/')
       }).on('end',()=>{
-        fs.unlink(mainOutput,err=>{
+        fs.unlink(`./${filename}.mp4`,err=>{
           if(err) console.log(err)
           else{
             console.log("Output file removed")
@@ -93,8 +96,11 @@ const socketio = io.listen(app.listen(process.env.PORT,(req, res)=>{
 //SUB_SERVER//
 socketio.sockets.on("connection",(socket)=>{
     console.log(`Connection established ${socket.id}`)
-   
+    let mainOutput,audioOutput;
+    let disconnected = false;
+    
     socket.on('downloadInfo',(data)=>{
+    
       console.log(data)
       const quality = data.quality;
       const url = data.url;
@@ -102,7 +108,7 @@ socketio.sockets.on("connection",(socket)=>{
       const itags = new Map([['1080p','137'],['720p','136'],['480p','135'],['360p','18']]);
     // merge audio and video for 1080p
         console.log("Downloading audio..")
-        const audioOutput = path.resolve(`./${randomstring.generate(5)}.mp4`),
+        audioOutput = path.resolve(`./${randomstring.generate(5)}.mp4`),
         mainOutput = path.resolve(`./${randomstring.generate(5)}.mp4`);
         
         const onProgress = (chunkLength, downloaded, total) => {
@@ -113,54 +119,88 @@ socketio.sockets.on("connection",(socket)=>{
           process.stdout.write(`(${(downloaded / 1024 / 1024).toFixed(2)}MB of ${(total / 1024 / 1024).toFixed(2)}MB)`);
         };
         
-        ytdl(url, {
+        try{
+          if(disconnected) throw new Error("Socket got disconnected..")
+          ytdl(url, {
             filter: format => format.container === 'mp4' && !format.qualityLabel
           }).on('error', console.error)
             .on('progress',onProgress)
             .pipe(fs.createWriteStream(audioOutput))
             .on('finish',()=>{
-                console.log('downloading video..')
-              
-                const video = ytdl(url,{
-                    quality:itags.get(quality),
-                    filter: format => format.container === 'mp4' && !format.audioEncoding
-                });
-                video.on('progress',onProgress);
-                ffmpeg()
-                .input(video)
-                .videoCodec('copy')
-                .input(audioOutput)
-                .audioCodec('copy')
-                .save(mainOutput)
-                .on('error',console.error)
-                .on('end',()=>{
-                  console.log("ended merging")
-                  
-                 // res.attachment(`${data.title}.mp4`)
-    
-                    fs.unlink(audioOutput,err=>{
-                        if(err) console.log(err);
-                        else
-                        console.log('\nFinished merging video and audio')
-                        //console.log(mainOutput)
-                        //generate a link with unique token with expiration time of 5mins
-                        const forid = {
-                          _id:socket.id
-                        };
-                        const redirectlink = `/downloadit?token=${generate_token(forid)}&output=${mainOutput}&filename=${title}`
-                        socket.emit('downloadlink',redirectlink);
-                        })
-                    })
+                if(!disconnected){
+                  console.log('downloading video..')
+                
+                  const video = ytdl(url,{
+                      quality:itags.get(quality),
+                      filter: format => format.container === 'mp4' && !format.audioEncoding
+                  });
+                  video
+                  .on('error',console.error)
+                  .on('progress',onProgress);
+                  //now merge the audio and video file
+                  ffmpeg()
+                  .input(video)
+                  .videoCodec('copy')
+                  .input(audioOutput)
+                  .audioCodec('copy')
+                  .save(mainOutput)
+                  .on('error',console.error)
+                  .on('end',()=>{
+                    console.log("ended merging")
+                    
+                  // res.attachment(`${data.title}.mp4`)
+      
+                      fs.unlink(audioOutput,err=>{
+                          if(err) console.log(err);
+                          else{
+                            console.log('\nFinished merging video and audio')
+                            //console.log(mainOutput)
+                            //generate a link with unique token with expiration time of 5mins
+                            const forid = {
+                              _id:socket.id
+                            };
+                            const redirectlink = `/downloadit?token=${generate_token(forid)}&output=${mainOutput}&filename=${title}`
+                            socket.emit('downloadlink',redirectlink);
+                          }
+                        
+                          })
+                      })
+                }   
                 })
+        }catch(err){
+          console.log(err)
+        }
+      
     })
     socket.on('disconnect',()=>{
+      disconnected = true;
       console.log('disconnected')
-      console.log('Removing '+ mainOutput)
-      fs.unlink(mainOutput,(err)=>{
-        if(err) console.log(err)
-        else
-          console.log(`${mainOutput} removed...`)
-      })
+      //delete all files associated with that socket
+      //delete afte 0.5s
+      setTimeout(()=>{
+        try{
+          fs.unlink(mainOutput,(err)=>{
+            if(err) console.log(err)
+            else{
+              console.log(`${mainOutput} removed...`)
+            }
+          })
+        }catch(err){
+          console.log(err);
+        }
+        try{
+          fs.unlink(audioOutput,err=>{
+            if(err) console.error(err);
+            else{
+              console.log(`Removed audio file... ${audioOutput}`)
+            }
+          })
+        }catch(err){
+          console.log(err)
+        }
+      },0.5)
+   
+      
     })
   })
 const generate_token = (forid)=>{
