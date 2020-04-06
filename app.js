@@ -5,6 +5,7 @@ const express    = require('express'),
       jwt        = require('jsonwebtoken'),
       readline   = require('readline'),
       path       = require('path'),
+      moment     = require('moment'),
       dotenv     = require('dotenv'),
       ytdl       = require('ytdl-core'),
       io         = require('socket.io'),
@@ -56,37 +57,85 @@ app.get('/redirect',(req, res)=>{
 app.get('/downloadit',(req, res)=>{
   const token = req.query.token;
   const mainOutput = req.query.output;
-  const filename = req.query.filename;
-  fs.rename(mainOutput,`./${filename}.mp4`,()=>{
-    console.log("File renamed...")
-  })
-  jwt.verify(token, process.env.JWT_SECRET, (err, decoded)=>{
-    if(err){
-       console.log('Link Expired!! Cannot create account from this token :-(');
-       res.send('LINK EXPIRED!!');
-       fs.unlink(`./${filename}`,err=>{
-        if(err) console.log(err)
-        else{
-          console.log("Output file removed")
-        }
-      })
-    } else{
-      //console.log(decoded);
-
-      res.attachment(`${filename}.mp4`)
-      fs.createReadStream(`./${filename}.mp4`).on('error',err=>{
-        console.log('no such file!');
-        res.redirect('/')
-      }).on('end',()=>{
-        fs.unlink(`./${filename}.mp4`,err=>{
+  const filename = req.query.filename; //title is the filename
+ 
+ 
+    jwt.verify(token, process.env.JWT_SECRET, (err, decoded)=>{
+      if(err){
+        console.log('Link Expired!! Cannot create account from this token :-(');
+        res.send('LINK EXPIRED!!');
+        fs.unlink(mainOutput,err=>{
           if(err) console.log(err)
           else{
-            console.log("Output file removed")
+            console.log("Output file removed --> "+mainOutput)
           }
         })
-      }).pipe(res,{end:true});
-  }
-});
+      } else{
+        //console.log(decoded); //{_id: socketid}
+        //rename it to that socketid(so that if user closes the tab.. the disconnect event is triggred which will try to delete mainOutput
+        // to pass through this problem.. I renamed the file with the socket.id which is always unique for every new connection
+        //  in this way if user closes the tab the download will not be intrepted)
+
+         
+        //get untransfered.json and add current file to it
+        //uncompleted download will be deleted by worker.js
+        //which will compare the timestamps and if that file has
+        //time difference of more than 30mins then
+        //that file will be deleted
+        
+            const untransfered = require('./untransfered');
+            const pendingFiles = untransfered.locations;
+            const fileobj = {
+                file:`${decoded._id}.mp4`,
+                timestamp: moment().format()
+            }
+            pendingFiles.push(fileobj)
+            const json  = {
+              locations: pendingFiles
+            }
+            fs.writeFile('./untransfered.json',JSON.stringify(json),err=>{
+                if(err) console.log(err)
+                else{
+                    console.log("Wrote to untransfered.json...\n")
+                }
+            })
+
+        fs.rename(mainOutput,`./${decoded._id}.mp4`,()=>{
+              console.log("File renamed...")
+              
+              res.attachment(`${filename}.mp4`)
+              fs.createReadStream(`./${decoded._id}.mp4`).on('error',err=>{
+                console.log('no such file!');
+                res.redirect('/')
+              }).on('end',()=>{
+                fs.unlink(`./${decoded._id}.mp4`,err=>{
+                  if(err) console.log(err)
+                  else{
+                    console.log("Output file removed")
+                    //remove file from untransfered.json
+
+                        let pendingObjs  =  untransfered.locations;
+                        pendingObjs = pendingObjs.filter((obj)=> obj.file!=`${decoded._id}.mp4`)
+                        const newjson  = {
+                          locations: pendingObjs
+                        }
+                        console.log(pendingObjs)
+                        fs.writeFile('./untransfered.json',JSON.stringify(newjson),err=>{
+                            if(err) console.log(err)
+                            else{
+                                console.log("Wrote to untransfered.json...\n")
+                            }
+                        })
+
+                    }
+                })
+              }).pipe(res,{end:true});
+        })
+       
+    }
+  });
+
+  
 })
 const socketio = io.listen(app.listen(process.env.PORT,(req, res)=>{
     console.log(`Server is started at port ${process.env.PORT}`)
