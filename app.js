@@ -7,6 +7,7 @@ const express    = require('express'),
       path       = require('path'),
       moment     = require('moment'),
       dotenv     = require('dotenv'),
+      worker     = require('./worker'),
       ytdl       = require('ytdl-core'),
       io         = require('socket.io'),
       ffmpegPath = require('@ffmpeg-installer/ffmpeg').path,
@@ -18,7 +19,11 @@ const express    = require('express'),
         app.use(express.static('public'));
         app.use(bodyParser.urlencoded({extended: true}));
         app.disable('x-powered-by');
-dotenv.config();
+
+        dotenv.config();      
+        //start the worker (will delete files which are kept for longer than 30mins)
+        worker.start()
+
 //REST APIs
 app.get('/',(req, res)=>{
   res.render('index');
@@ -52,7 +57,10 @@ app.get('/redirect',(req, res)=>{
   const quality = req.query.quality;
   const url = req.query.from;
   const title = req.query.title;
+  if(quality&&url&&title)
   res.render('redirect',{quality:quality,url:url,title:title});
+  else
+    res.redirect('/')
 })
 app.get('/downloadit',(req, res)=>{
   const token = req.query.token;
@@ -62,8 +70,8 @@ app.get('/downloadit',(req, res)=>{
  
     jwt.verify(token, process.env.JWT_SECRET, (err, decoded)=>{
       if(err){
-        console.log('Link Expired!! Cannot create account from this token :-(');
-        res.send('LINK EXPIRED!!');
+        console.log('Link Expired!! :-(');
+        res.redirect('/')
         fs.unlink(mainOutput,err=>{
           if(err) console.log(err)
           else{
@@ -82,11 +90,11 @@ app.get('/downloadit',(req, res)=>{
         //which will compare the timestamps and if that file has
         //time difference of more than 30mins then
         //that file will be deleted
-        
+
             const untransfered = require('./untransfered');
             const pendingFiles = untransfered.locations;
             const fileobj = {
-                file:`${decoded._id}.mp4`,
+                file:`./temp_vid/${decoded._id}.mp4`,
                 timestamp: moment().format()
             }
             pendingFiles.push(fileobj)
@@ -100,22 +108,22 @@ app.get('/downloadit',(req, res)=>{
                 }
             })
 
-        fs.rename(mainOutput,`./${decoded._id}.mp4`,()=>{
+        fs.rename(mainOutput,`./temp_vid/${decoded._id}.mp4`,()=>{
               console.log("File renamed...")
               
               res.attachment(`${filename}.mp4`)
-              fs.createReadStream(`./${decoded._id}.mp4`).on('error',err=>{
+              fs.createReadStream(`./temp_vid/${decoded._id}.mp4`).on('error',err=>{
                 console.log('no such file!');
                 res.redirect('/')
               }).on('end',()=>{
-                fs.unlink(`./${decoded._id}.mp4`,err=>{
+                fs.unlink(`./temp_vid/${decoded._id}.mp4`,err=>{
                   if(err) console.log(err)
                   else{
                     console.log("Output file removed")
                     //remove file from untransfered.json
 
                         let pendingObjs  =  untransfered.locations;
-                        pendingObjs = pendingObjs.filter((obj)=> obj.file!=`${decoded._id}.mp4`)
+                        pendingObjs = pendingObjs.filter((obj)=> obj.file!=`./temp_vid/${decoded._id}.mp4`)
                         const newjson  = {
                           locations: pendingObjs
                         }
@@ -123,7 +131,7 @@ app.get('/downloadit',(req, res)=>{
                         fs.writeFile('./untransfered.json',JSON.stringify(newjson),err=>{
                             if(err) console.log(err)
                             else{
-                                console.log("Wrote to untransfered.json...\n")
+                                console.log("file stamp removed from untransfered.json...\n")
                             }
                         })
 
@@ -136,6 +144,9 @@ app.get('/downloadit',(req, res)=>{
   });
 
   
+})
+app.get('*',(req,res)=>{
+  res.redirect('/')
 })
 const socketio = io.listen(app.listen(process.env.PORT,(req, res)=>{
     console.log(`Server is started at port ${process.env.PORT}`)
@@ -157,8 +168,9 @@ socketio.sockets.on("connection",(socket)=>{
       const itags = new Map([['1080p','137'],['720p','136'],['480p','135'],['360p','18']]);
     // merge audio and video for 1080p
         console.log("Downloading audio..")
-        audioOutput = path.resolve(`./${randomstring.generate(5)}.mp4`),
-        mainOutput = path.resolve(`./${randomstring.generate(5)}.mp4`);
+        //temp videos will be store in ./temp_vid
+        audioOutput = path.resolve(`./temp_vid/${randomstring.generate(5)}.mp4`),
+        mainOutput = path.resolve(`./temp_vid/${randomstring.generate(5)}.mp4`);
         
         const onProgress = (chunkLength, downloaded, total) => {
           const percent = downloaded / total;
