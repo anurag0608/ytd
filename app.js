@@ -61,6 +61,12 @@ app.get('/downloadit',(req, res)=>{
     if(err){
        console.log('Link Expired!! Cannot create account from this token :-(');
        res.send('LINK EXPIRED!!');
+       fs.unlink(mainOutput,err=>{
+        if(err) console.log(err)
+        else{
+          console.log("Output file removed")
+        }
+      })
     } else{
       //console.log(decoded);
 
