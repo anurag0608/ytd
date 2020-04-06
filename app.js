@@ -153,7 +153,15 @@ socketio.sockets.on("connection",(socket)=>{
                     })
                 })
     })
-    socket.on('disconnect',()=>console.log('disconnected'))
+    socket.on('disconnect',()=>{
+      console.log('disconnected')
+      console.log('Removing '+ mainOutput)
+      fs.unlink(mainOutput,(err)=>{
+        if(err) console.log(err)
+        else
+          console.log(`${mainOutput} removed...`)
+      })
+    })
   })
 const generate_token = (forid)=>{
     const header = { algorithm:"HS512", expiresIn: '300000'  }, //5min
