@@ -12,7 +12,7 @@ const start = ()=>{ console.log("\nWORKER.JS STARTED\n")
                             if (err) console.log(err)
                             else{
                                     untransfered = JSON.parse(data)
-                                    console.log(++i)
+                                    
                                     untransfered.locations.forEach(location=>{
                                         let last = moment(location.timestamp)
                                         let now = moment().format();
@@ -24,7 +24,19 @@ const start = ()=>{ console.log("\nWORKER.JS STARTED\n")
                                                if(err) console.log(err)
                                                 else{
                                                    console.log(`removed... ${location}`)
-                                                    
+                                                    //remove that obj from json file
+                                                    let pendingObjs  =  untransfered.locations;
+                                                    pendingObjs = pendingObjs.filter((obj)=> obj.file!=location.file)
+                                                    const newjson  = {
+                                                      locations: pendingObjs
+                                                    }
+                                                   // console.log(pendingObjs)
+                                                    fs.writeFile('./untransfered.json',JSON.stringify(newjson),err=>{
+                                                        if(err) console.log(err)
+                                                        else{
+                                                            console.log("file stamp removed from untransfered.json...[process done by WORKER.JS]")
+                                                        }
+                                                    })
                                                }
                                             })
                                         }
