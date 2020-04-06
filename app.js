@@ -29,33 +29,39 @@ app.get('/',(req, res)=>{
   res.render('index');
 });
 app.post('/videoinfo',(req, res)=>{
-const url = req.body.url;
+const url = req.body.url.trim();
+
 console.log('getting info about url...')
   ytdl.getBasicInfo(url, (err, info)=>{
     //console.log(info)
-    const length = info.player_response.videoDetails.lengthSeconds
-    console.log(length)
-    if(length>1200){ //if videolength is greated then 20mins
-      res.send({'err':"Videos with duration greater than 20mins are locked.... Will be available in future "})
+    if(err){
+      res.send({"err":"Invalid or empty URL.Please enter a valid YouTube URL"})
     }else{
-          const _qualities = []
-          info.formats.forEach(format=>{
-            if(format.qualityLabel && 
-              (format.qualityLabel == '1080p' || format.qualityLabel=='720p'||
-              format.qualityLabel=='480p'||format.qualityLabel=='360p'))
-            _qualities.push(format.qualityLabel);
-          });
-          let unique = [...new Set(_qualities)];
-          //console.log(unique)
-          const details = {
-              thumbnail: info.player_response.microformat.playerMicroformatRenderer.thumbnail.thumbnails[0].url,
-              author : info.author.name,
-              title:info.player_response.videoDetails.title,
-              channel_url: info.author.channel_url,
-              availQuality: unique
-          }
-          res.send(JSON.stringify(details,null,2))
+      const length = info.player_response.videoDetails.lengthSeconds
+      console.log(length)
+      if(length>1200){ //if videolength is greated then 20mins
+        res.send({'err':"Videos with duration greater than 20mins are locked.... Will be available in future "})
+      }else{
+            const _qualities = []
+            info.formats.forEach(format=>{
+              if(format.qualityLabel && 
+                (format.qualityLabel == '1080p' || format.qualityLabel=='720p'||
+                format.qualityLabel=='480p'||format.qualityLabel=='360p'))
+              _qualities.push(format.qualityLabel);
+            });
+            let unique = [...new Set(_qualities)];
+            //console.log(unique)
+            const details = {
+                thumbnail: info.player_response.microformat.playerMicroformatRenderer.thumbnail.thumbnails[0].url,
+                author : info.author.name,
+                title:info.player_response.videoDetails.title,
+                channel_url: info.author.channel_url,
+                availQuality: unique
+            }
+            res.send(JSON.stringify(details,null,2))
+      }
     }
+    
    
   })
 })
