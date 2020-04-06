@@ -5,6 +5,7 @@ $(document).ready(()=>{
     videoInfo.css('display','none')
     let isActive = false
     $('#convert').on('click',(e)=>{
+        $('tbody').html(""); 
         const url = $(inputUrl).val().trim()
         if(url!=''){
             if(isActive){
@@ -19,32 +20,42 @@ $(document).ready(()=>{
             
            
             $.post('/videoinfo',{url:url},(response)=>{
-                let blur = 4;
-                const resObj = JSON.parse(response);
-                console.log(resObj)
-                $('tbody').html(""); 
-               
-            resObj.availQuality.forEach(q=>{
-                let component = `<tr>
-                <td>${q}</td>
-                    <td><a href='/redirect?quality=${q}&from=${url}&title=${resObj.title.toString()}' class="uk-button uk-button-default download_video" resolutions='${q}' type="button">Download</a></td>
-                </tr>`
-                $('tbody').append(component); 
-            })
-                $('#thumbnail').attr('src',resObj.thumbnail)
-                $('#title').text(resObj.title)
-                $('#author').text(resObj.author)
-                $('#readmore').attr('href',resObj.channel_url)
-                videoInfo.css('display','block')
-                $('#thumbnail').on('load',(e)=>{
-                    $('#bigImage').css('filter','blur(0px)')
-                    $('#bigImage').removeClass('swirl-out-bck')
-                    $('#title').css('filter','blur(0)')
-                    $('#title').addClass('text-focus-in')
-                    $('#thumbnail').addClass('kenburns-top')
-                    $('#bigImage').addClass('rotate-in-2-cw')
-                    isActive = true
+                if(response.err){
+                    $('tbody').html(""); 
+                    $('#readmore').attr('href','#')
+                    $('#message').text(response.err)
+                    $('#message').css("display","inline-block")
+                }else{
+                    $('#message').css("display","none")
+                    let blur = 4;
+                    const resObj = JSON.parse(response);
+                    console.log(resObj)
+                    $('tbody').html(""); 
+                   
+                   
+                resObj.availQuality.forEach(q=>{
+                    let component = `<tr>
+                    <td>${q}</td>
+                        <td><a href='/redirect?quality=${q}&from=${url}&title=${resObj.title.toString()}' class="uk-button uk-button-default download_video" resolutions='${q}' type="button">Download</a></td>
+                    </tr>`
+                    $('tbody').append(component); 
                 })
+                    $('#thumbnail').attr('src',resObj.thumbnail)
+                    $('#title').text(resObj.title)
+                    $('#author').text(resObj.author)
+                    $('#readmore').attr('href',resObj.channel_url)
+                    videoInfo.css('display','block')
+                    $('#thumbnail').on('load',(e)=>{
+                        $('#bigImage').css('filter','blur(0px)')
+                        $('#bigImage').removeClass('swirl-out-bck')
+                        $('#title').css('filter','blur(0)')
+                        $('#title').addClass('text-focus-in')
+                        $('#thumbnail').addClass('kenburns-top')
+                        $('#bigImage').addClass('rotate-in-2-cw')
+                        isActive = true
+                    })
+                }
+              
             })
         }else{
             console.log("URL is empty!!")

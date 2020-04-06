@@ -18,6 +18,15 @@
 	-webkit-animation: kenburns-top 5s ease-in-out alternate forwards;
 	        animation: kenburns-top 5s ease-in-out alternate forwards;
 }
+#message{
+  font-size: 16px;
+  line-height: 1.4;
+  background: rgba(255,0,0,0.3);
+  padding: 10px;
+  font-weight: 300;
+  border-radius: 20px;
+  display: none
+}
 /* KEYFRAMES */
 @-webkit-keyframes rotate-in-2-cw {
     0% {

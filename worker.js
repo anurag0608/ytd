@@ -2,7 +2,7 @@
 const fs = require('fs');
 const moment = require('moment');
 let interval;
-const start = ()=>{
+const start = ()=>{ console.log("\nWORKER.JS STARTED\n")
                    interval = setInterval(() => {
                        //don't use require() method as this will cache the json and
                        //when it will be modified we won't be able to see the changes
