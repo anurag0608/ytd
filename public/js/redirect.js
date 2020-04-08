@@ -84,8 +84,12 @@ $(document).ready(()=>{
     }
    
     socket.on('downloadlink',(link)=>{
-        window.location.href = link
         clearInterval(interval)
+        window.location.href = link
+    })
+    socket.on('redirect',link=>{
+        clearInterval(interval)
+        window.location.href = link
     })
   
 })

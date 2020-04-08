@@ -1,12 +1,17 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
     <head>
-        <title>Home</title>
+        <meta charset="utf-8">
+        <title>DownTube.Live</title>
+        <meta name="robots" content="follow" />
         <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="DownTube.Live Download YouTube Videos and mp3 for free, High quality youtube videos and mp3 audios, full-hd sound and video.">
         <link rel="stylesheet" href="/css/uikit.min.css" />
         <link rel='stylesheet' href="/css/main.css">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <link href="https://fonts.googleapis.com/css2?family=Lobster&display=swap" rel="stylesheet">
         <link href="https://fonts.googleapis.com/css2?family=Monoton&display=swap" rel="stylesheet">
+        <link href="https://fonts.googleapis.com/css2?family=Acme&display=swap" rel="stylesheet">
         <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.1/socket.io.js"></script>
         <script src="/js/uikit.min.js"></script>
         <script src="/js/uikit-icons.min.js"></script>
@@ -23,7 +28,7 @@
         
                 <div class="uk-navbar-center-left"><div>
                 </div></div>
-                <a class="uk-navbar-item uk-logo" style="font-family: 'Monoton', cursive;font-size: 42px;"; href="#">DownTube.Live</a>
+                <a class="uk-navbar-item uk-logo" id='domain'style="font-family: 'Monoton', cursive;"; href="#">DownTube.Live</a>
                 </div></div>
         
             </div>
@@ -33,7 +38,14 @@
           
     <input id='link'class="uk-input" name="url" placeholder="Paste the URL here..." required>
            <div id='convert_div' style="text-align: center;">
-            <a style='margin: 10px;'id='convert'class="uk-button uk-button-primary">Convert</a>
+            <a style='margin: 10px;'id='convert'class="uk-button uk-button-primary heartbeat">Convert</a>
+            <div class="uk-flex uk-flex-center">
+                <div></div>
+                <div>
+                    <a class="uk-button uk-button-default" href="#">About</a>
+                </div>
+                <div></div>
+            </div>
            </div>
            <div class="uk-align-center" style="text-align: center;">
                <h5 style='text-align: center;'id='message'></h5>
