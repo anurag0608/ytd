@@ -27,17 +27,10 @@ const express    = require('express'),
         worker.start()
 
 //REST APIs
-app.get('/',generaluserverify,(req, res)=>{
-    //send token to browser and user with token only can use the page or download 
-    //create again
-    const header = { algorithm:"HS512", expiresIn: '900000'  }, //15min
-    payload = { rand : randomstring.generate(10)},
-    key = process.env.ORG_CLIENT;
-    const token = jwt.sign(payload, key, header);
-    res.cookie("gen_user", token, {expire: 900000 + Date.now(),httpOnly: true,sameSite:true});
+app.get('/',(req, res)=>{
     res.render('index');
 });
-app.post('/videoinfo',generaluserverify,(req, res)=>{
+app.post('/videoinfo',(req, res)=>{
 const url = req.body.url.trim();
 
 console.log('getting info about url...')
@@ -80,7 +73,7 @@ console.log('getting info about url...')
    
   })
 })
-app.get('/audiostream',generaluserverify,(req,res)=>{
+app.get('/audiostream',(req,res)=>{
     const quality = req.query.quality,
           url     = req.query.from,
           title   = req.query.title;
@@ -94,7 +87,7 @@ app.get('/audiostream',generaluserverify,(req,res)=>{
           .pipe(res);
     }
 })
-app.get('/redirect',verify,(req, res)=>{
+app.get('/redirect',(req, res)=>{
   const quality = req.query.quality;
   const url = req.query.from;
   const title = req.query.title;
@@ -329,22 +322,4 @@ const generate_token = (forid)=>{
             key = process.env.JWT_SECRET;
             const token = jwt.sign(payload, key, header);
             return token;
-}
-//middleware
-//just a token to verify client 
-// i think it'll prevent bots to download or access my apis
-function generaluserverify(req, res, next){
-  const client_token = req.cookies.gen_user;
-  // console.log(client_token);
-  jwt.verify(client_token,process.env.ORG_CLIENT, (err, decoded)=>{
-      if(err){
-          console.log(err);
-          console.log("Token Expired!!");
-          res.clearCookie("gen_user");
-          res.redirect('/')
-      }else{
-         next();
-          
-      }
-  });
 }
