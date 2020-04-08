@@ -65,6 +65,20 @@ console.log('getting info about url...')
    
   })
 })
+app.get('/audiostream',(req,res)=>{
+    const quality = req.query.quality,
+          url     = req.query.from,
+          title   = req.query.title;
+    if(quality&&url&&title){
+      const options = {
+        filter: format => format.container === 'mp4' && !format.qualityLabel
+      }
+      res.contentType('audio/mp3')
+      res.attachment(`${title}.mp3`)
+      ytdl(url,options)
+          .pipe(res);
+    }
+})
 app.get('/redirect',(req, res)=>{
   const quality = req.query.quality;
   const url = req.query.from;

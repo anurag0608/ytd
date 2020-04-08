@@ -36,10 +36,20 @@ $(document).ready(()=>{
                 resObj.availQuality.forEach(q=>{
                     let component = `<tr>
                     <td>${q}</td>
-                        <td><a href='/redirect?quality=${q}&from=${url}&title=${resObj.title.toString()}' class="uk-button uk-button-default download_video" resolutions='${q}' type="button">Download</a></td>
+                        <td><a href='/redirect?quality=${q}&from=${url}&title=${resObj.title.toString()}' 
+                        class="uk-button uk-button-default download_video" resolutions='${q}' 
+                        type="button">Download</a></td>
                     </tr>`
                     $('tbody').append(component); 
                 })
+                    let audioDownload = `<tr>
+                    <td>High Quality MP3</td>
+                        <td><a href='/audiostream?quality=mp3&from=${url}&title=${resObj.title.toString()}' 
+                        class="uk-button uk-button-default" 
+                        type="button">Download</a></td>`
+                    
+                        $('tbody').append(audioDownload); 
+                    
                     $('#thumbnail').attr('src',resObj.thumbnail)
                     $('#title').text(resObj.title)
                     $('#author').text(resObj.author)
