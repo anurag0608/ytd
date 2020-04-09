@@ -196,6 +196,25 @@ app.get('/downloadit',(req, res)=>{
                             if(err) console.log(err)
                             else{
                                 console.log("file stamp removed from untransfered.json...\n")
+
+                                let current_downloads = require('./downloads.json') 
+                              //{"total_downloads":0,"last_download":{"time_stamp":"TIME_HERE","ip": "ip of last download"}} 
+                                let downloads = Number(current_downloads.total_downloads)
+                                let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+                                downloads++
+                                let total_downloads_obj = {
+                                  total_downloads: downloads,
+                                  last_download: {
+                                    time_stamp: moment().format(),
+                                    ip: ip
+                                  }
+                                }
+                                fs.writeFile('./downloads.json',JSON.stringify(total_downloads_obj),(err)=>{
+                                  if(err) console.log(err)
+                                  else{
+                                      console.log("Downloads added to record and timestap recorded")
+                                  }
+                                })
                             }
                         })
 
