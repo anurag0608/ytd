@@ -106,6 +106,10 @@ app.get('/audiostream',(req,res)=>{
                   res.contentType('audio/mp3')
                   res.attachment(`${title}.mp3`)
                   ytdl(url,options)
+                      .on('end',()=>{
+                              //record the last download
+                            record_downloads(req)
+                      })
                       .pipe(res);
                 }else{
                     res.redirect('/');
@@ -197,24 +201,7 @@ app.get('/downloadit',(req, res)=>{
                             else{
                                 console.log("file stamp removed from untransfered.json...\n")
 
-                                let current_downloads = require('./downloads.json') 
-                              //{"total_downloads":0,"last_download":{"time_stamp":"TIME_HERE","ip": "ip of last download"}} 
-                                let downloads = Number(current_downloads.total_downloads)
-                                let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-                                downloads++
-                                let total_downloads_obj = {
-                                  total_downloads: downloads,
-                                  last_download: {
-                                    time_stamp: moment().format(),
-                                    ip: ip
-                                  }
-                                }
-                                fs.writeFile('./downloads.json',JSON.stringify(total_downloads_obj),(err)=>{
-                                  if(err) console.log(err)
-                                  else{
-                                      console.log("Downloads added to record and timestap recorded")
-                                  }
-                                })
+                                 record_downloads(req)
                             }
                         })
 
@@ -371,4 +358,25 @@ const generate_token = (forid)=>{
             key = process.env.JWT_SECRET;
             const token = jwt.sign(payload, key, header);
             return token;
+}
+const record_downloads = (req)=>{
+
+  let current_downloads = require('./downloads.json') 
+  //{"total_downloads":0,"last_download":{"time_stamp":"TIME_HERE","ip": "ip of last download"}} 
+  let downloads = Number(current_downloads.total_downloads)
+  let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+  downloads++
+  let total_downloads_obj = {
+    total_downloads: downloads,
+    last_download: {
+      time_stamp: moment().format(),
+      ip: ip
+    }
+  }
+  fs.writeFile('./downloads.json',JSON.stringify(total_downloads_obj),(err)=>{
+    if(err) console.log(err)
+    else{
+        console.log("Downloads added to record and timestap recorded")
+    }
+  })
 }
