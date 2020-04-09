@@ -24,6 +24,7 @@ $(document).ready(()=>{
            
             $.post('/videoinfo',{url:url},(response)=>{
                 if(response.code==='405'){
+                    //download only audio which are less than 20mins
                     $('tbody').html(""); 
                     $('#message').css('display','inline-block')
                     $('#readmore').attr('href','#')
@@ -58,6 +59,14 @@ $(document).ready(()=>{
                             $('#bigImage').addClass('rotate-in-2-cw')
                             isActive = true
                         })
+                }else if(response.code==='40X'){
+                    //url contains audio greater than 20mins
+                    $('tbody').html(""); 
+                    $('#message').css('display','inline-block')
+                    $('#readmore').attr('href','#')
+                    $('#message').text(response.err)
+                    $('#message').addClass('text-focus-in')
+                    $('#message').css("display","inline-block")
                 }else{
                     $('#message').css("display","none")
                     let blur = 4;

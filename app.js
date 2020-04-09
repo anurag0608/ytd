@@ -27,12 +27,15 @@ const express    = require('express'),
         worker.start()
         app.use('/robots.txt',(rea,res)=>{
           res.type('text/plain');
-          res.send("User-agent: *\nAllow: /");
+          res.send("User-agent: *\nAllow: /\nAllow: /about\nDisallow: /videoinfo\nDisallow: /audiostream\nDisallow: /redirect?quality=\nDisallow: /downloadit?token=");
         })
 //REST APIs
 app.get('/',(req, res)=>{
-    res.render('index');
-});
+    res.render('index')
+})
+app.get('/about',(req, res)=>{
+  res.render('about')
+})
 app.post('/videoinfo',(req, res)=>{
 const url = req.body.url.trim();
 
@@ -45,13 +48,19 @@ console.log('getting info about url...')
       const length = info.player_response.videoDetails.lengthSeconds
       console.log(length)
       if(length>420){ //if videolength is greated then 7mins
-        res.send({'code':"405",'err':"Videos with duration greater than 7mins are locked.... Will be available in future. For now you can download audio only for this video",
-                  'audioinfo':{
-                      "thumbnail": info.player_response.microformat.playerMicroformatRenderer.thumbnail.thumbnails[0].url,
-                      "author" : info.author.name,
-                      "title":info.player_response.videoDetails.title,
-                      "channel_url": info.author.channel_url,
-                  }});
+          //limit audio download to 20mins and give only audio downoad option
+          if(length<1200){
+            res.send({'code':"405",'err':"Videos with duration greater than 7mins are locked.... Will be available in future. For now you can download audio only for this video",
+            'audioinfo':{
+                "thumbnail": info.player_response.microformat.playerMicroformatRenderer.thumbnail.thumbnails[0].url,
+                "author" : info.author.name,
+                "title":info.player_response.videoDetails.title,
+                "channel_url": info.author.channel_url,
+            }});
+          }else{
+            res.send({'code':'40X','err':"Audios with duration greater than 20mins are locked... Will be available in future."})
+          }
+       
       }else{
             const _qualities = []
             info.formats.forEach(format=>{
@@ -80,15 +89,33 @@ app.get('/audiostream',(req,res)=>{
     const quality = req.query.quality,
           url     = req.query.from,
           title   = req.query.title;
-    if(quality&&url&&title){
-      const options = {
-        filter: format => format.container === 'mp4' && !format.qualityLabel
-      }
-      res.contentType('audio/mp3')
-      res.attachment(`${title}.mp3`)
-      ytdl(url,options)
-          .pipe(res);
-    }
+        if(quality&&url&&title){
+          ytdl.getBasicInfo(url, (err, info)=>{
+            //console.log(info)
+              if(err){
+                console.log({"err":"Invalid or empty URL.Please enter a valid YouTube URL"})
+                res.redirect('/')
+              }else{
+                const length = info.player_response.videoDetails.lengthSeconds
+                console.log(length)
+                if(length<=1200){
+                  //if video is less than 20mins download audio 
+                  const options = {
+                    filter: format => format.container === 'mp4' && !format.qualityLabel
+                  }
+                  res.contentType('audio/mp3')
+                  res.attachment(`${title}.mp3`)
+                  ytdl(url,options)
+                      .pipe(res);
+                }else{
+                    res.redirect('/');
+                }
+              }
+
+          })
+          }else{
+            res.redirect('/')
+          }
 })
 app.get('/redirect',(req, res)=>{
   const quality = req.query.quality;
