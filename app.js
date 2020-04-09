@@ -25,7 +25,10 @@ const express    = require('express'),
         dotenv.config();      
         //start the worker (will delete files which are kept for longer than 30mins)
         worker.start()
-
+        app.use('/robots.txt',(rea,res)=>{
+          res.type('text/plain');
+          res.send("User-agent: *\nAllow: /");
+        })
 //REST APIs
 app.get('/',(req, res)=>{
     res.render('index');

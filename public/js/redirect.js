@@ -40,8 +40,8 @@ $(document).ready(()=>{
 
     if(data.url&&data.quality&&data.title){
         let i=0;
-        socket.emit('downloadInfo',data);
         givesomefacts()
+        socket.emit('downloadInfo',data);
         socket.on('progress',progress=>{
             
             console.log(progress.progress)
