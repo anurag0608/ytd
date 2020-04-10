@@ -9,7 +9,7 @@ const start = ()=>{ console.log("\nWORKER.JS STARTED\n")
                             //let untransfered = require('./untransfered');
                             let untransfered = {}
                             fs.readFile('./untransfered.json', 'utf-8', (err, data) => {
-                            if (err) console.log(err)
+                            if (err) { console.log(err)}
                             else{
                                     untransfered = JSON.parse(data)
                                     
@@ -21,9 +21,10 @@ const start = ()=>{ console.log("\nWORKER.JS STARTED\n")
                                         let duration = moment.duration(y.diff(x))
                                         if(duration.as('minutes')>30){ //delete the files kept longer than 30mins
                                             fs.unlink(location.file,(err)=>{
-                                               if(err) console.log(err)
-                                                else{
-                                                   console.log(`removed... ${location}`)
+                                               if(err) {
+                                                //no such file is found   
+                                                console.log("NO SUCH FILE IS FOUND..\n")
+                                                console.log(`${location}\n`)
                                                     //remove that obj from json file
                                                     let pendingObjs  =  untransfered.locations;
                                                     pendingObjs = pendingObjs.filter((obj)=> obj.file!=location.file)
@@ -37,6 +38,10 @@ const start = ()=>{ console.log("\nWORKER.JS STARTED\n")
                                                             console.log("file stamp removed from untransfered.json...[process done by WORKER.JS]")
                                                         }
                                                     })
+                                                }
+                                                else{
+                                                   //file is found and is deleted
+                                                   console.log("FILE DELETED..{WORKER.JS}")
                                                }
                                             })
                                         }
