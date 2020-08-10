@@ -26,18 +26,18 @@ const start = ()=>{ console.log("\nWORKER.JS STARTED\n")
                                                         console.log("NO SUCH FILE IS FOUND..\n")
                                                         console.log(`${location}\n`)
                                                             //remove that obj from json file
-                                                            let pendingObjs  =  untransfered.locations;
-                                                            pendingObjs = pendingObjs.filter((obj)=> obj.file!=location.file)
-                                                            const newjson  = {
-                                                            locations: pendingObjs
-                                                            }
-                                                        // console.log(pendingObjs)
-                                                            fs.writeFile('./untransfered.json',JSON.stringify(newjson),err=>{
-                                                                if(err) console.log(err)
-                                                                else{
-                                                                    console.log("file stamp removed from untransfered.json...[process done by WORKER.JS]")
-                                                                }
-                                                            })
+                                                        //     let pendingObjs  =  untransfered.locations;
+                                                        //     pendingObjs = pendingObjs.filter((obj)=> obj.file!=location.file)
+                                                        //     const newjson  = {
+                                                        //     locations: pendingObjs
+                                                        //     }
+                                                        // // console.log(pendingObjs)
+                                                        //     fs.writeFile('./untransfered.json',JSON.stringify(newjson),err=>{
+                                                        //         if(err) console.log(err)
+                                                        //         else{
+                                                        //             console.log("file stamp removed from untransfered.json...[process done by WORKER.JS]")
+                                                        //         }
+                                                        //     })
                                                     }
                                                     else{
                                                     //file is found and is deleted

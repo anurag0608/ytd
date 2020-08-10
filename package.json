@@ -4,7 +4,7 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js",
+    "start": "NODE_ENV=production pm2 start app.js -i 0 --max-memory-restart 300M",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "AxDu",
@@ -15,14 +15,14 @@
     "compression": "^1.7.4",
     "cookie-parser": "^1.4.5",
     "dotenv": "^8.2.0",
-    "ejs": "^3.0.2",
+    "ejs": "^3.1.3",
     "express": "^4.17.1",
     "fluent-ffmpeg": "^2.1.2",
     "jsonwebtoken": "^8.5.1",
-    "moment": "^2.24.0",
+    "moment": "^2.27.0",
     "path": "^0.12.7",
     "randomstring": "^1.1.5",
     "socket.io": "^2.3.0",
-    "ytdl-core": "^2.0.1"
+    "ytdl-core": "^2.1.7"
   }
 }

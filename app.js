@@ -38,10 +38,11 @@ app.get('/about',(req, res)=>{
 })
 app.post('/videoinfo',(req, res)=>{
 const url = req.body.url.trim();
-
+// console.log(url)
 console.log('getting info about url...')
-  ytdl.getBasicInfo(url, (err, info)=>{
+  ytdl.getBasicInfo(url.toString(), (err, info)=>{
     //console.log(info)
+    // console.log(err)
     if(err){
       res.send({"err":"Invalid or empty URL.Please enter a valid YouTube URL"})
     }else{
@@ -183,31 +184,33 @@ app.get('/downloadit',(req, res)=>{
               fs.createReadStream(`./temp_vid/${decoded._id}.mp4`).on('error',err=>{
                 console.log('no such file!');
                 res.redirect('/')
-              }).on('end',()=>{
+              }).pipe(res,{end:true})
+              .on('end',()=>{
                 fs.unlink(`./temp_vid/${decoded._id}.mp4`,err=>{
                   if(err) console.log(err)
                   else{
                     console.log("Output file removed")
+                    record_downloads(req)
+
                     //remove file from untransfered.json
+                        // const untransfered_new = require('./untransfered.json')
+                        // let pendingObjs  =  untransfered_new.locations;
+                        // pendingObjs = pendingObjs.filter((obj)=> obj.file!=`./temp_vid/${decoded._id}.mp4`)
+                        // const newjson  = {
+                        //   locations: pendingObjs
+                        // }
+                        // console.log(pendingObjs)
+                        // fs.writeFile('./untransfered.json',JSON.stringify(newjson),err=>{
+                        //     if(err) console.log(err)
+                        //     else{
+                        //         console.log("file stamp removed from untransfered.json...\n")
 
-                        let pendingObjs  =  untransfered.locations;
-                        pendingObjs = pendingObjs.filter((obj)=> obj.file!=`./temp_vid/${decoded._id}.mp4`)
-                        const newjson  = {
-                          locations: pendingObjs
-                        }
-                        console.log(pendingObjs)
-                        fs.writeFile('./untransfered.json',JSON.stringify(newjson),err=>{
-                            if(err) console.log(err)
-                            else{
-                                console.log("file stamp removed from untransfered.json...\n")
-
-                                 record_downloads(req)
-                            }
-                        })
+                        //     }
+                        // })
 
                     }
                 })
-              }).pipe(res,{end:true});
+              });
         })
        
     }
