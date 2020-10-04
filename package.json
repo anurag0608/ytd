@@ -23,6 +23,6 @@
     "path": "^0.12.7",
     "randomstring": "^1.1.5",
     "socket.io": "^2.3.0",
-    "ytdl-core": "^2.1.7"
+    "ytdl-core": "^3.3.0"
   }
 }
