@@ -41,91 +41,85 @@ app.get('/',(req, res)=>{
 app.get('/about',(req, res)=>{
   res.render('about')
 })
-app.post('/videoinfo',(req, res)=>{
-const url = req.body.url.trim();
-// console.log(url)
-console.log('getting info about url...')
-  ytdl.getBasicInfo(url.toString(), (err, info)=>{
-    //console.log(info)
-    // console.log(err)
-    if(err){
-      res.send({"err":"Invalid or empty URL.Please enter a valid YouTube URL"})
-    }else{
+app.post('/videoinfo',async (req, res)=>{
+  const url = req.body.url.trim();
+  // console.log(url)
+  console.log('getting info about url...')
+    await ytdl.getBasicInfo(url.toString())
+    .then(info=>{
       const length = info.player_response.videoDetails.lengthSeconds
-      console.log(length)
-      if(length>420){ //if videolength is greated then 7mins
-          //limit audio download to 20mins and give only audio downoad option
-          if(length<1200){
-            res.send({'code':"405",'err':"Videos with duration greater than 7mins are locked.... Will be available in future. For now you can download audio only for this video",
-            'audioinfo':{
-                "thumbnail": info.player_response.microformat.playerMicroformatRenderer.thumbnail.thumbnails[0].url,
-                "author" : info.author.name,
-                "title":info.player_response.videoDetails.title,
-                "channel_url": info.author.channel_url,
-            }});
-          }else{
-            res.send({'code':'40X','err':"Audios with duration greater than 20mins are locked... Will be available in future."})
-          }
-       
-      }else{
-            const _qualities = []
-            info.formats.forEach(format=>{
-              if(format.qualityLabel && 
-                (format.qualityLabel == '1080p' || format.qualityLabel=='720p'||
-                format.qualityLabel=='480p'||format.qualityLabel=='360p'))
-              _qualities.push(format.qualityLabel);
-            });
-            let unique = [...new Set(_qualities)];
-            //console.log(unique)
-            const details = {
-                thumbnail: info.player_response.microformat.playerMicroformatRenderer.thumbnail.thumbnails[0].url,
-                author : info.author.name,
-                title:info.player_response.videoDetails.title,
-                channel_url: info.author.channel_url,
-                availQuality: unique
+        console.log(length)
+        if(length>420){ //if videolength is greated then 7mins
+            //limit audio download to 20mins and give only audio downoad option
+            if(length<1200){
+              res.send({'code':"405",'err':"Videos with duration greater than 7mins are locked.... Will be available in future. For now you can download audio only for this video",
+              'audioinfo':{
+                  "thumbnail": info.player_response.microformat.playerMicroformatRenderer.thumbnail.thumbnails[0].url,
+                  "author" : info.author.name,
+                  "title":info.player_response.videoDetails.title,
+                  "channel_url": info.author.channel_url,
+              }});
+            }else{
+              res.send({'code':'40X','err':"Audios with duration greater than 20mins are locked... Will be available in future."})
             }
-            res.send(JSON.stringify(details,null,2))
-      }
-    }
-    
-   
+         
+        }else{
+              const _qualities = []
+              info.formats.forEach(format=>{
+                if(format.qualityLabel && 
+                  (format.qualityLabel == '1080p' || format.qualityLabel=='720p'||
+                  format.qualityLabel=='480p'||format.qualityLabel=='360p'))
+                _qualities.push(format.qualityLabel);
+              });
+              let unique = [...new Set(_qualities)];
+              //console.log(unique)
+              const details = {
+                  thumbnail: info.player_response.microformat.playerMicroformatRenderer.thumbnail.thumbnails[0].url,
+                  author : info.author.name,
+                  title:info.player_response.videoDetails.title,
+                  channel_url: info.author.channel_url,
+                  availQuality: unique
+              }
+              res.send(JSON.stringify(details,null,2))
+        }
+    })
+    .catch(err=>{
+      res.send({"err":"Invalid or empty URL.Please enter a valid YouTube URL"})
+    })
   })
-})
-app.get('/audiostream',(req,res)=>{
+app.get('/audiostream',async (req,res)=>{
     const quality = req.query.quality,
           url     = req.query.from,
           title   = req.query.title;
         if(quality&&url&&title){
-          ytdl.getBasicInfo(url, (err, info)=>{
-            //console.log(info)
-              if(err){
+          await ytdl.getBasicInfo(url)
+          .then(info=>{
+            const length = info.player_response.videoDetails.lengthSeconds
+            console.log(length)
+            if(length<=1200){
+              //if video is less than 20mins download audio 
+              const options = {
+                filter: format => format.container === 'mp4' && !format.qualityLabel
+              }
+              res.contentType('audio/mp3')
+              res.attachment(`${title}.mp3`)
+              ytdl(url,options)
+                  .on('end',()=>{
+                          //record the last download
+                        record_downloads(req)
+                  })
+                  .pipe(res);
+            }else{
+                res.redirect('/');
+            }
+          })
+          .catch(err=>{
                 console.log({"err":"Invalid or empty URL.Please enter a valid YouTube URL"})
                 res.redirect('/')
-              }else{
-                const length = info.player_response.videoDetails.lengthSeconds
-                console.log(length)
-                if(length<=1200){
-                  //if video is less than 20mins download audio 
-                  const options = {
-                    filter: format => format.container === 'mp4' && !format.qualityLabel
-                  }
-                  res.contentType('audio/mp3')
-                  res.attachment(`${title}.mp3`)
-                  ytdl(url,options)
-                      .on('end',()=>{
-                              //record the last download
-                            record_downloads(req)
-                      })
-                      .pipe(res);
-                }else{
-                    res.redirect('/');
-                }
-              }
-
           })
-          }else{
+        }else{
             res.redirect('/')
-          }
+        }
 })
 app.get('/redirect',(req, res)=>{
   const quality = req.query.quality;
