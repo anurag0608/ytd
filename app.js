@@ -29,6 +29,11 @@ const express    = require('express'),
           res.type('text/plain');
           res.send("User-agent: *\nAllow: /\nAllow: /about\nDisallow: /videoinfo\nDisallow: /audiostream\nDisallow: /redirect?quality=\nDisallow: /downloadit?token=");
         })
+        // creating temp folder for video caching
+        const dir = './temp_vid';
+        if (!fs.existsSync(dir)){
+            fs.mkdirSync(dir);
+        }
 //REST APIs
 app.get('/',(req, res)=>{
     res.render('index')
