@@ -29,8 +29,8 @@ const express    = require('express'),
           res.type('text/plain');
           res.send("User-agent: *\nAllow: /\nAllow: /about\nDisallow: /videoinfo\nDisallow: /audiostream\nDisallow: /redirect?quality=\nDisallow: /downloadit?token=");
         })
-        // creating temp folder for video caching
         const dir = './temp_vid';
+
         if (!fs.existsSync(dir)){
             fs.mkdirSync(dir);
         }
@@ -42,51 +42,55 @@ app.get('/about',(req, res)=>{
   res.render('about')
 })
 app.post('/videoinfo',async (req, res)=>{
-  const url = req.body.url.trim();
-  // console.log(url)
-  console.log('getting info about url...')
-    await ytdl.getBasicInfo(url.toString())
-    .then(info=>{
-      const length = info.player_response.videoDetails.lengthSeconds
-        console.log(length)
-        if(length>420){ //if videolength is greated then 7mins
-            //limit audio download to 20mins and give only audio downoad option
-            if(length<1200){
-              res.send({'code':"405",'err':"Videos with duration greater than 7mins are locked.... Will be available in future. For now you can download audio only for this video",
-              'audioinfo':{
-                  "thumbnail": info.player_response.microformat.playerMicroformatRenderer.thumbnail.thumbnails[0].url,
-                  "author" : info.author.name,
-                  "title":info.player_response.videoDetails.title,
-                  "channel_url": info.author.channel_url,
-              }});
-            }else{
-              res.send({'code':'40X','err':"Audios with duration greater than 20mins are locked... Will be available in future."})
+const url = req.body.url.trim();
+// console.log(url)
+console.log('getting info about url...')
+  await ytdl.getBasicInfo(url.toString())
+  .then(info=>{
+    const length = info.player_response.videoDetails.lengthSeconds
+      if(length>420){ //if videolength is greated then 7mins
+          //limit audio download to 20mins and give only audio downoad option
+          if(length<1200){
+            res.send({'code':"405",'err':"Videos with duration greater than 7mins are locked.... Will be available in future. For now you can download audio only for this video",
+            'audioinfo':{
+                "thumbnail": info.player_response.microformat.playerMicroformatRenderer.thumbnail.thumbnails[0].url,
+                "author" : info.author.name,
+                "title":info.player_response.videoDetails.title,
+                "channel_url": info.author.channel_url,
+            }});
+          }else{
+            res.send({'code':'40X','err':"Audios with duration greater than 20mins are locked... Will be available in future."})
+          }
+       
+      }else{
+        console.log("here")
+            const _qualities = []
+            info.formats.forEach(format=>{
+              if(format.qualityLabel && 
+                (format.qualityLabel == '1080p' || format.qualityLabel=='720p'||
+                format.qualityLabel=='480p'||format.qualityLabel=='360p'))
+              _qualities.push(format.qualityLabel);
+            });
+            let unique = [...new Set(_qualities)];
+            // console.log(info.player_response.microformat.playerMicroformatRenderer.thumbnail.thumbnails[0].url)
+            // console.log(info.videoDetails.author.name)
+            // console.log(info.videoDetails.title)
+            // console.log(info.videoDetails.author.channel_url)
+            const details = {
+                thumbnail: info.player_response.microformat.playerMicroformatRenderer.thumbnail.thumbnails[0].url,
+                author : info.videoDetails.author.name,
+                title:info.videoDetails.title,
+                channel_url: info.videoDetails.author.channel_url,
+                availQuality: unique
             }
-         
-        }else{
-              const _qualities = []
-              info.formats.forEach(format=>{
-                if(format.qualityLabel && 
-                  (format.qualityLabel == '1080p' || format.qualityLabel=='720p'||
-                  format.qualityLabel=='480p'||format.qualityLabel=='360p'))
-                _qualities.push(format.qualityLabel);
-              });
-              let unique = [...new Set(_qualities)];
-              //console.log(unique)
-              const details = {
-                  thumbnail: info.player_response.microformat.playerMicroformatRenderer.thumbnail.thumbnails[0].url,
-                  author : info.author.name,
-                  title:info.player_response.videoDetails.title,
-                  channel_url: info.author.channel_url,
-                  availQuality: unique
-              }
-              res.send(JSON.stringify(details,null,2))
-        }
-    })
-    .catch(err=>{
-      res.send({"err":"Invalid or empty URL.Please enter a valid YouTube URL"})
-    })
+            console.log(details)
+            res.send(JSON.stringify(details,null,2))
+      }
   })
+  .catch(err=>{
+    res.send({"err":"Invalid or empty URL.Please enter a valid YouTube URL"})
+  })
+})
 app.get('/audiostream',async (req,res)=>{
     const quality = req.query.quality,
           url     = req.query.from,
@@ -231,14 +235,11 @@ socketio.sockets.on("connection",(socket)=>{
     let mainOutput,audioOutput;
     let disconnected = false;
     
-    socket.on('downloadInfo',(data)=>{
+    socket.on('downloadInfo',async(data)=>{
       //recheck for video duration
-      ytdl.getBasicInfo(data.url, (err, details)=>{
+      await ytdl.getBasicInfo(data.url)
+      .then((details)=>{
         //console.log(info)
-        if(err){
-          console.log(err)
-          socket.emit('redirect','/')
-        }else{
           const length = details.player_response.videoDetails.lengthSeconds
           console.log(length)
             if(length>420){ //if video length greater then 7mins
@@ -317,11 +318,10 @@ socketio.sockets.on("connection",(socket)=>{
                       }
                  }
        
-        }
-    });
-
-      
-      
+        }).catch(err=>{
+          console.log(err)
+          socket.emit('redirect','/')
+        })    
     })
     socket.on('disconnect',()=>{
       disconnected = true;
