@@ -54,9 +54,9 @@ console.log('getting info about url...')
             res.send({'code':"405",'err':"Videos with duration greater than 7mins are locked.... Will be available in future. For now you can download audio only for this video",
             'audioinfo':{
                 "thumbnail": info.player_response.microformat.playerMicroformatRenderer.thumbnail.thumbnails[0].url,
-                "author" : info.author.name,
-                "title":info.player_response.videoDetails.title,
-                "channel_url": info.author.channel_url,
+                "author" : info.videoDetails.author.name,
+                "title":info.videoDetails.title,
+                "channel_url": info.videoDetails.author.channel_url,
             }});
           }else{
             res.send({'code':'40X','err':"Audios with duration greater than 20mins are locked... Will be available in future."})
